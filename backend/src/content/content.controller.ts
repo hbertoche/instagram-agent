@@ -1,29 +1,53 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ContentService } from './content.service';
-import { GenerateContentDto } from '../dto/generate.dto';
-import { SelectOptionDto } from '../dto/select.dto';
+import { GenerateContentDto } from './dto/generate.dto';
+import { SelectOptionDto } from './dto/select.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from '../auth/user.decorator';
 
-@Controller('api')
+@Controller()
 export class ContentController {
   constructor(private readonly contentService: ContentService) {}
 
   @Post('generate')
-  async generateContent(@Body() dto: GenerateContentDto) {
-    return await this.contentService.generateContent(dto);
+  @UseGuards(JwtAuthGuard)
+  async generateContent(
+    @Body() dto: GenerateContentDto,
+    @User() user: any,
+  ) {
+    if (!user?.id) {
+      throw new Error('User authentication required');
+    }
+    return await this.contentService.generateContent(dto, user.id);
   }
 
   @Post('select')
-  async selectOption(@Body() dto: SelectOptionDto) {
-    return await this.contentService.selectOption(dto);
+  @UseGuards(JwtAuthGuard)
+  async selectOption(
+    @Body() dto: SelectOptionDto,
+    @User() user: any,
+  ) {
+    if (!user?.id) {
+      throw new Error('User authentication required');
+    }
+    return await this.contentService.selectOption(dto, user.id);
   }
 
   @Get('history')
-  async getHistory() {
-    return await this.contentService.getHistory();
+  @UseGuards(JwtAuthGuard)
+  async getHistory(@User() user: any) {
+    if (!user?.id) {
+      throw new Error('User authentication required');
+    }
+    return await this.contentService.getHistory(user.id, user.role);
   }
 
   @Get('analytics')
-  async getAnalytics() {
-    return await this.contentService.getAnalytics();
+  @UseGuards(JwtAuthGuard)
+  async getAnalytics(@User() user: any) {
+    if (!user?.id) {
+      throw new Error('User authentication required');
+    }
+    return await this.contentService.getAnalytics(user.id, user.role);
   }
 }

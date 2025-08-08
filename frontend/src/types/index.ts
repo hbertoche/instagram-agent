@@ -21,6 +21,11 @@ export interface Content {
   optionB: ContentOption;
   selectedOption?: SelectedOption | null;
   createdAt: string;
+  user?: {
+    username: string;
+    email: string;
+    role: string;
+  };
 }
 
 export interface GenerateContentRequest {

@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { NotificationProvider, NotificationContainer, useNotifications } from './contexts/NotificationContext';
+import AuthForm from './components/AuthForm';
+import Header from './components/Header';
 import { ContentForm } from './components/ContentForm';
 import { ContentOptions } from './components/ContentOptions';
 import { History } from './components/History';
 import { Analytics } from './components/Analytics';
+import { ApiUsageDisplay } from './components/ApiUsageDisplay';
+import { LoadingSpinner } from './components/LoadingSpinner';
 import { contentService } from './services/api';
 import { Content, ContentType, SelectedOption, Analytics as AnalyticsType } from './types';
 import './App.css';
 
-function App() {
+const AppContent: React.FC = () => {
+  const { user, token, isLoading: authLoading } = useAuth();
+  const { addNotification } = useNotifications();
   const [currentContent, setCurrentContent] = useState<Content | null>(null);
   const [history, setHistory] = useState<Content[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsType>({
@@ -20,11 +28,13 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load history and analytics on component mount
+  // Load history and analytics on component mount (when authenticated)
   useEffect(() => {
-    loadHistory();
-    loadAnalytics();
-  }, []);
+    if (user && token) {
+      loadHistory();
+      loadAnalytics();
+    }
+  }, [user, token]);
 
   const loadHistory = async () => {
     try {
@@ -52,8 +62,39 @@ function App() {
       const content = await contentService.generateContent({ prompt, type });
       setCurrentContent(content);
       await loadHistory(); // Refresh history
-    } catch (err) {
-      setError('Failed to generate content. Please try again.');
+      
+      // Check if we got fallback content and notify user
+      if (content.optionA.caption.includes('fallback') || content.optionA.caption.includes('unavailable')) {
+        addNotification({
+          type: 'warning',
+          message: 'OpenAI API is currently unavailable. Using enhanced fallback content generation.',
+          duration: 6000,
+        });
+      } else {
+        addNotification({
+          type: 'success',
+          message: 'Content generated successfully!',
+          duration: 3000,
+        });
+      }
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to generate content';
+      setError(errorMessage);
+      
+      if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('limit')) {
+        addNotification({
+          type: 'error',
+          message: 'API quota exceeded. Please try again later or contact support.',
+          duration: 8000,
+        });
+      } else {
+        addNotification({
+          type: 'error',
+          message: 'Failed to generate content. Please try again.',
+          duration: 5000,
+        });
+      }
+      
       console.error('Generation error:', err);
     } finally {
       setLoading(false);
@@ -82,14 +123,22 @@ function App() {
     setError(null);
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">📸 Instagram Agent</h1>
-          <p className="text-gray-600">Generate and test Instagram content with AI</p>
-        </header>
+  // Show loading spinner during auth check
+  if (authLoading) {
+    return <LoadingSpinner />;
+  }
 
+  // Show login form if not authenticated
+  if (!user) {
+    return <AuthForm />;
+  }
+
+  // Main app content for authenticated users
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             {error}
@@ -117,6 +166,8 @@ function App() {
             )}
             
             <Analytics analytics={analytics} />
+            
+            {token && <ApiUsageDisplay token={token} />}
           </div>
 
           <div>
@@ -125,6 +176,18 @@ function App() {
         </div>
       </div>
     </div>
+  );
+};
+
+// Main App component with AuthProvider
+function App() {
+  return (
+    <AuthProvider>
+      <NotificationProvider>
+        <AppContent />
+        <NotificationContainer />
+      </NotificationProvider>
+    </AuthProvider>
   );
 }
 

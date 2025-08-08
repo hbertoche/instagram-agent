@@ -10,8 +10,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  contents  Content[]
+
+  @@map("users")
+}
+
 model Content {
   id             String       @id @default(cuid())
+  userId         String       // Required - associates content with user
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   prompt         String
   type           ContentType
   optionA        Json         // { caption: string; hashtags: string[] }
@@ -21,6 +37,11 @@ model Content {
   updatedAt      DateTime     @updatedAt
 
   @@map("contents")
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
 
 enum ContentType {

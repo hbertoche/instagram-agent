@@ -1,15 +1,21 @@
 import React from 'react';
 import { Content, SelectedOption } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HistoryProps {
   history: Content[];
 }
 
 export const History: React.FC<HistoryProps> = ({ history }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   if (history.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Content History</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-4">
+          Content History {isAdmin && <span className="text-sm font-normal text-gray-500">(All Users)</span>}
+        </h3>
         <p className="text-gray-500 text-center">No content generated yet.</p>
       </div>
     );
@@ -17,15 +23,27 @@ export const History: React.FC<HistoryProps> = ({ history }) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-bold text-gray-800 mb-4">Content History</h3>
+      <h3 className="text-xl font-bold text-gray-800 mb-4">
+        Content History {isAdmin && <span className="text-sm font-normal text-gray-500">(All Users)</span>}
+      </h3>
       
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {history.map((item) => (
           <div key={item.id} className="border border-gray-200 rounded-lg p-4">
             <div className="flex justify-between items-start mb-2">
-              <div>
+              <div className="flex-1">
                 <p className="font-medium text-gray-800">{item.prompt}</p>
-                <p className="text-sm text-gray-500">{item.type}</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <p className="text-sm text-gray-500">{item.type}</p>
+                  {isAdmin && item.user && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                      👤 {item.user.username}
+                      {item.user.role === 'ADMIN' && (
+                        <span className="ml-1 text-red-600">Admin</span>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-xs text-gray-400">

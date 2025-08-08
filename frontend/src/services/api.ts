@@ -10,24 +10,33 @@ const api = axios.create({
   },
 });
 
+// Add auth token to requests if available
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const contentService = {
   async generateContent(request: GenerateContentRequest): Promise<Content> {
-    const response = await api.post<Content>('/api/generate', request);
+    const response = await api.post<Content>('/generate', request);
     return response.data;
   },
 
   async selectOption(request: SelectOptionRequest): Promise<Content> {
-    const response = await api.post<Content>('/api/select', request);
+    const response = await api.post<Content>('/select', request);
     return response.data;
   },
 
   async getHistory(): Promise<Content[]> {
-    const response = await api.get<Content[]>('/api/history');
+    const response = await api.get<Content[]>('/history');
     return response.data;
   },
 
   async getAnalytics(): Promise<Analytics> {
-    const response = await api.get<Analytics>('/api/analytics');
+    const response = await api.get<Analytics>('/analytics');
     return response.data;
   },
 };
