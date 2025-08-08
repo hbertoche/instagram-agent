@@ -5,14 +5,20 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Enable CORS for frontend
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    origin: process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL?.split(',') || ['https://yourdomain.com']
+      : ['http://localhost:3000', 'http://localhost:5173'],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
   
-  // Enable validation
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
   
   const port = process.env.PORT || 3001;
   await app.listen(port);

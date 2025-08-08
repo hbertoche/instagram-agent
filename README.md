@@ -1,5 +1,8 @@
 # 📸 Instagram Agent with A/B Testing
 
+⚠️ **DEMO APPLICATION - NOT PRODUCTION READY** ⚠️  
+This is a demonstration project implementing basic security measures suitable for learning and demonstration purposes only.
+
 A full-stack web application that helps users generate Instagram content using AI and performs A/B testing to determine which content performs better.
 
 ## 🚀 Features

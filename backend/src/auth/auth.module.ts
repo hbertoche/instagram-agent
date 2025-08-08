@@ -5,6 +5,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { AuthenticationService } from './services/authentication.service';
+import { UserManagementService } from './services/user-management.service';
+import { UserSeedingService } from './services/user-seeding.service';
+import { PasswordService } from './services/password.service';
+import { TokenService } from './services/token.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
   imports: [
@@ -19,7 +25,16 @@ import { JwtStrategy } from './jwt.strategy';
     }),
     ConfigModule,
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService,
+    AuthenticationService,
+    UserManagementService,
+    UserSeedingService,
+    PasswordService,
+    TokenService,
+    JwtStrategy,
+    PrismaService,
+  ],
   controllers: [AuthController],
   exports: [AuthService],
 })

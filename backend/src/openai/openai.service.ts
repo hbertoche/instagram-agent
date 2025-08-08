@@ -14,8 +14,6 @@ export class OpenAiService {
   }
 
   async generateContent(prompt: string, type: ContentType) {
-    console.log(`OpenAI generateContent called with prompt: "${prompt}", type: ${type}`);
-    
     const typeText = type === ContentType.POST ? 'Instagram post' : 'Instagram story';
     
     const systemPrompt = `You are an expert Instagram content creator. Generate engaging ${typeText} content based on the user's prompt. Return ONLY a JSON object with this exact structure:
@@ -27,8 +25,6 @@ export class OpenAiService {
     const userPrompt = `Create ${typeText} content for: ${prompt}`;
 
     try {
-      console.log('Making OpenAI API request...');
-      // Generate Option A
       const optionAResponse = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
@@ -38,7 +34,6 @@ export class OpenAiService {
         temperature: 0.7,
       });
 
-      // Generate Option B
       const optionBResponse = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
@@ -51,11 +46,12 @@ export class OpenAiService {
       const optionA = JSON.parse(optionAResponse.choices[0].message.content || '{}');
       const optionB = JSON.parse(optionBResponse.choices[0].message.content || '{}');
 
-      console.log('OpenAI API responses received successfully');
       return { optionA, optionB };
     } catch (error) {
-      console.error('OpenAI API Error:', error);
-      // Fallback content if API fails
+      if (process.env.NODE_ENV === 'development') {
+        console.error('OpenAI API Error:', error);
+      }
+      
       return {
         optionA: {
           caption: `Check out this amazing ${type.toLowerCase()} about ${prompt}! ✨`,

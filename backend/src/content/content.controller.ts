@@ -5,49 +5,33 @@ import { SelectOptionDto } from './dto/select.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from '../auth/user.decorator';
 
+interface AuthenticatedUser {
+  id: string;
+  role: string;
+}
+
 @Controller()
+@UseGuards(JwtAuthGuard)
 export class ContentController {
-  constructor(private readonly contentService: ContentService) {}
+  constructor(private contentService: ContentService) {}
 
   @Post('generate')
-  @UseGuards(JwtAuthGuard)
-  async generateContent(
-    @Body() dto: GenerateContentDto,
-    @User() user: any,
-  ) {
-    if (!user?.id) {
-      throw new Error('User authentication required');
-    }
-    return await this.contentService.generateContent(dto, user.id);
+  async generateContent(@Body() request: GenerateContentDto, @User() user: AuthenticatedUser) {
+    return this.contentService.generateContent(request, user.id);
   }
 
   @Post('select')
-  @UseGuards(JwtAuthGuard)
-  async selectOption(
-    @Body() dto: SelectOptionDto,
-    @User() user: any,
-  ) {
-    if (!user?.id) {
-      throw new Error('User authentication required');
-    }
-    return await this.contentService.selectOption(dto, user.id);
+  async selectOption(@Body() request: SelectOptionDto, @User() user: AuthenticatedUser) {
+    return this.contentService.selectOption(request, user.id);
   }
 
   @Get('history')
-  @UseGuards(JwtAuthGuard)
-  async getHistory(@User() user: any) {
-    if (!user?.id) {
-      throw new Error('User authentication required');
-    }
-    return await this.contentService.getHistory(user.id, user.role);
+  async getHistory(@User() user: AuthenticatedUser) {
+    return this.contentService.getHistory(user.id, user.role);
   }
 
   @Get('analytics')
-  @UseGuards(JwtAuthGuard)
-  async getAnalytics(@User() user: any) {
-    if (!user?.id) {
-      throw new Error('User authentication required');
-    }
-    return await this.contentService.getAnalytics(user.id, user.role);
+  async getAnalytics(@User() user: AuthenticatedUser) {
+    return this.contentService.getAnalytics(user.id, user.role);
   }
 }

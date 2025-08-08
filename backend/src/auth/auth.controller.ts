@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { User } from './user.decorator';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
+import type { UserProfile } from './interfaces/auth.interfaces';
 
 @Controller('auth')
 export class AuthController {
@@ -25,7 +26,7 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  getProfile(@User() user: any) {
+  getProfile(@User() user: UserProfile) {
     return user;
   }
 }
