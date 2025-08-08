@@ -33,6 +33,18 @@ const AppContent: React.FC = () => {
     if (user && token) {
       loadHistory();
       loadAnalytics();
+    } else {
+      // Reset state when user logs out
+      setCurrentContent(null);
+      setHistory([]);
+      setAnalytics({
+        totalSelections: 0,
+        optionASelections: 0,
+        optionBSelections: 0,
+        optionAPercentage: 0,
+        optionBPercentage: 0,
+      });
+      setError(null);
     }
   }, [user, token]);
 

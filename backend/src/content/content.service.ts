@@ -70,8 +70,12 @@ export class ContentService {
       throw new Error('User authentication required');
     }
 
+    console.log(`getHistory called for user ${userId} with role: ${userRole}`);
+
     // If user is admin, show all content, otherwise show only their own
     const whereCondition = userRole === 'ADMIN' ? {} : { userId: userId };
+    
+    console.log('Where condition:', whereCondition);
 
     const contents = await this.prisma.content.findMany({
       where: whereCondition,

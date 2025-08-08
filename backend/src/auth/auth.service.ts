@@ -46,6 +46,22 @@ export class AuthService {
           },
         });
       }
+
+      // Create content creator demo user
+      const creatorUser = await this.prisma.user.findUnique({
+        where: { username: 'creator' },
+      });
+
+      if (!creatorUser) {
+        await this.prisma.user.create({
+          data: {
+            username: 'creator',
+            email: 'creator@instagram-agent.com',
+            password: 'creator123', // In production, this should be hashed
+            role: 'USER',
+          },
+        });
+      }
     } catch (error) {
       console.log('Demo users seeding will happen after database is ready');
     }
