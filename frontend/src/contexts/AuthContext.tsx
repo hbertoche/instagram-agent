@@ -36,7 +36,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored token on app start
     const storedToken = localStorage.getItem('authToken');
     const storedUser = localStorage.getItem('user');
     
@@ -63,7 +62,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(data.access_token);
         setUser(data.user);
         
-        // Store in localStorage
         localStorage.setItem('authToken', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
@@ -71,7 +69,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       return false;
     } catch (error) {
-      console.error('Login error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Login error:', error);
+      }
       return false;
     } finally {
       setIsLoading(false);
@@ -94,7 +94,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(data.access_token);
         setUser(data.user);
         
-        // Store in localStorage
         localStorage.setItem('authToken', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
@@ -102,7 +101,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       return false;
     } catch (error) {
-      console.error('Registration error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Registration error:', error);
+      }
       return false;
     } finally {
       setIsLoading(false);

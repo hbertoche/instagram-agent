@@ -33,7 +33,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     setNotifications(prev => [...prev, newNotification]);
 
-    // Auto-remove after duration
     const duration = notification.duration || 5000;
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
